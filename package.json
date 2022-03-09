@@ -7,12 +7,17 @@
     "start": "nodemon server.js"
   },
   "dependencies": {
+    "@emotion/react": "^11.8.1",
+    "@emotion/styled": "^11.8.1",
+    "@mui/icons-material": "^5.5.0",
+    "@mui/material": "^5.5.0",
     "@prisma/client": "^3.10.0",
     "apollo-server": "^3.6.3",
     "bcryptjs": "^2.4.3",
     "graphql": "^16.3.0",
     "jsonwebtoken": "^8.5.1",
     "nodemon": "^2.0.15",
+    "react-router-dom": "^6.2.2",
     "uuid": "^8.3.2"
   },
   "devDependencies": {
