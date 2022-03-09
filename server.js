@@ -18,6 +18,21 @@ const users = [
   },
 ];
 
+const Todos = [
+  {
+    title: "Learn GraphQL",
+    by: "qwerty1234",
+  },
+  {
+    title: "Dancing with the stars",
+    by: "qwerty5678",
+  },
+  {
+    title: "Drinking like a boss",
+    by: "qwerty5678",
+  },
+];
+
 const typeDefs = gql`
   type Query {
     users: [User]
@@ -36,19 +51,29 @@ const typeDefs = gql`
   }
 
   type User {
-    id: ID
-    firstName: String
-    lastName: String
-    email: String
+    id: ID!
+    firstName: String!
+    lastName: String!
+    email: String!
+    todos: [Todo]
+  }
+
+  type Todo {
+    title: String!
+    by: ID!
   }
 `;
 
 const resolvers = {
   Query: {
     users: () => users,
-    user: (parent, { id }, context) => {
-      console.log(id);
+    user: (_, { id }) => {
       return users.find((item) => item.id == id);
+    },
+  },
+  User: {
+    todos: (user) => {
+      return Todos.filter((todo) => todo.by == user.id);
     },
   },
   Mutation: {
