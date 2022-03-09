@@ -1,6 +1,7 @@
 const pc = require("@prisma/client");
 const bcryptjs = require("bcryptjs");
-const { ApolloError, AuthenticationError } = require("apollo-server");
+const { AuthenticationError } = require("apollo-server");
+const jwt = require("jsonwebtoken");
 
 const prisma = new pc.PrismaClient();
 
@@ -23,9 +24,24 @@ const resolvers = {
       });
       return newUser;
     },
+    signInUser: async (_, { userSignIn }) => {
+      const user = await prisma.user.findUnique({
+        where: { email: userSignIn.email },
+      });
+      if (!user)
+        throw new AuthenticationError("User doesn't exist with that email");
+      const isMatched = await bcryptjs.compare(
+        userSignIn.password,
+        user.password
+      );
+      if (!isMatched)
+        throw new AuthenticationError("Invalid email or password");
+      const token = jwt.sign({ userId: user.id }, "secret", {
+        expiresIn: "1h",
+      });
+      return { token };
+    },
   },
 };
 
 module.exports = resolvers;
-
-// export default resolvers;
