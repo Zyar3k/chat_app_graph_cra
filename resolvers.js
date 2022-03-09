@@ -1,12 +1,27 @@
 const pc = require("@prisma/client");
 const bcryptjs = require("bcryptjs");
-const { AuthenticationError } = require("apollo-server");
+const { AuthenticationError, ForbiddenError } = require("apollo-server");
 const jwt = require("jsonwebtoken");
 
 const prisma = new pc.PrismaClient();
 
 const resolvers = {
-  Query: {},
+  Query: {
+    users: async (_, args, { userId }) => {
+      if (!userId) throw new ForbiddenError("You must be logged in");
+      const users = await prisma.user.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+        where: {
+          id: {
+            not: userId,
+          },
+        },
+      });
+      return users;
+    },
+  },
   Mutation: {
     signupUser: async (_, { userNew }) => {
       const user = await prisma.user.findUnique({
