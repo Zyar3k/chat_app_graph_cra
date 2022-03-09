@@ -36,7 +36,7 @@ const resolvers = {
       );
       if (!isMatched)
         throw new AuthenticationError("Invalid email or password");
-      const token = jwt.sign({ userId: user.id }, "secret", {
+      const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, {
         expiresIn: "1h",
       });
       return { token };
