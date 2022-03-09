@@ -1,15 +1,16 @@
 const { ApolloServer, gql } = require("apollo-server");
+const { v4 } = require("uuid");
 
 const users = [
   {
-    id: 1,
+    id: "qwerty1234",
     firstName: "John",
     lastName: "Doe",
     email: "john@example.com",
     password: "12345",
   },
   {
-    id: 2,
+    id: "qwerty5678",
     firstName: "Jane",
     lastName: "Doe",
     email: "jane@example.com",
@@ -21,6 +22,17 @@ const typeDefs = gql`
   type Query {
     users: [User]
     user(id: ID!): User
+  }
+
+  input UserInput {
+    firstName: String!
+    lastName: String!
+    email: String!
+    password: String!
+  }
+
+  type Mutation {
+    createUser(userNew: UserInput!): User
   }
 
   type User {
@@ -37,6 +49,16 @@ const resolvers = {
     user: (parent, { id }, context) => {
       console.log(id);
       return users.find((item) => item.id == id);
+    },
+  },
+  Mutation: {
+    createUser: (_, { userNew }) => {
+      const newUser = {
+        id: v4(),
+        ...userNew,
+      };
+      users.push(newUser);
+      return newUser;
     },
   },
 };
