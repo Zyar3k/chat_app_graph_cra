@@ -1,8 +1,9 @@
-import { useQuery } from "@apollo/client";
+import { useMutation, useQuery } from "@apollo/client";
 import {
   AppBar,
   Avatar,
   Box,
+  Stack,
   TextField,
   Toolbar,
   Typography,
@@ -11,16 +12,27 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { GET_MSG } from "../graphql/queries";
 import MessageCard from "./MessageCard";
+import SendIcon from "@mui/icons-material/Send";
+import { SEND_MSG } from "../graphql/mutations";
 
 const ChatScreen = () => {
   const { id, name } = useParams();
+  const [text, setText] = useState("");
+  const [messages, setMessages] = useState([]);
   const { data, loading, error } = useQuery(GET_MSG, {
     variables: {
       receiverId: +id,
     },
+    onCompleted(data) {
+      setMessages(data.messagesByUser);
+    },
   });
 
-  console.log(data);
+  const [sendMessage] = useMutation(SEND_MSG, {
+    onCompleted(data) {
+      setMessages((prevMessages) => [...prevMessages, data.createMessage]);
+    },
+  });
 
   return (
     <Box flexGrow={1}>
@@ -44,7 +56,7 @@ const ChatScreen = () => {
         {loading ? (
           <Typography variant="h6">Loading messages...</Typography>
         ) : (
-          data.messagesByUser.map((msg, index) => (
+          messages.map((msg, index) => (
             <MessageCard
               key={index}
               text={msg.text}
@@ -53,16 +65,24 @@ const ChatScreen = () => {
             />
           ))
         )}
-        {/* <MessageCard text="Hello World!" date="1212" direction="end" />
-        <MessageCard text="Hello World!" date="1212" direction="end" /> */}
       </Box>
-      <TextField
-        placeholder="Type a message"
-        variant="standard"
-        fullWidth
-        multiline
-        rows={2}
-      />
+      <Stack direction="row">
+        <TextField
+          placeholder="Type a message"
+          variant="standard"
+          fullWidth
+          multiline
+          rows={2}
+          value={text}
+          onChange={(e) => setText(e.target.value)}
+        />
+        <SendIcon
+          fontSize="large"
+          onClick={() => {
+            sendMessage({ variables: { text, receiverId: +id } });
+          }}
+        />
+      </Stack>
     </Box>
   );
 };
