@@ -1,10 +1,39 @@
 import React, { useRef, useState } from "react";
-import { Box, Card, Stack, Typography, Button, TextField } from "@mui/material";
+import {
+  Box,
+  Card,
+  Stack,
+  Typography,
+  Button,
+  TextField,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
+import { useMutation } from "@apollo/client";
+import { SIGNUP_USER } from "../graphql/mutations";
 
 const AuthScreen = () => {
-  const [showLogin, setShowLogin] = useState(false);
+  const [showLogin, setShowLogin] = useState(true);
   const [formData, setFormData] = useState({});
   const authForm = useRef({});
+  const [signupUser, { data: signupData, loading: l1, error: e1 }] =
+    useMutation(SIGNUP_USER);
+
+  if (l1) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        height="100vh"
+      >
+        <Box textAlign="center">
+          <CircularProgress />
+          <Typography variant="h6">Authenticating...</Typography>
+        </Box>
+      </Box>
+    );
+  }
 
   const handleOnChange = (e) => {
     setFormData({
@@ -16,10 +45,20 @@ const AuthScreen = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log(formData);
+    if (showLogin) {
+      //
+    } else {
+      signupUser({
+        variables: {
+          userNew: formData,
+        },
+      });
+    }
   };
 
   return (
     <Box
+      ref={authForm}
       component="form"
       onSubmit={handleSubmit}
       display="flex"
@@ -29,10 +68,16 @@ const AuthScreen = () => {
     >
       <Card variant="outlined" sx={{ padding: "10px" }}>
         <Stack direction="column" spacing={2} sx={{ width: "400px" }}>
+          {signupData && (
+              <Alert severity="success">
+                {signupData.signupUser.firstName} Signed Up
+              </Alert>
+            )}
+            {e1 &&<Alert severity="error">{e1.message}</Alert>}
           <Typography variant="h5">
             Please {showLogin ? "Login" : "Signup"}
           </Typography>
-          {showLogin && (
+          {!showLogin && (
             <>
               <TextField
                 name="firstName"
@@ -66,15 +111,15 @@ const AuthScreen = () => {
             variant="subtitle1"
             textAlign="center"
             onClick={() => {
-              setShowLogin(!showLogin);
+              setShowLogin((preValue) => !preValue);
               setFormData({});
               authForm.current.reset();
             }}
           >
             {showLogin ? "Signup?" : "Login?"}
           </Typography>
-          <Button type="submit" variant="outlined" color="primary">
-            Please {showLogin ? "Login" : "Signup"}
+          <Button variant="outlined" type="submit">
+            {showLogin ? "Login" : "Signup"}
           </Button>
         </Stack>
       </Card>
